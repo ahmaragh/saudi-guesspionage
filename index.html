@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>كم النسبة؟</title>
+<script src="https://unpkg.com/mqtt@5.15.2/dist/mqtt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+:root{--bg:#07111e;--panel:#0f1c2f;--panel2:#13243c;--line:#263b5b;--text:#f7f9fc;--muted:#9fb0c9;--cyan:#6ee7f9;--gold:#ffd84d;--green:#55e08e;--red:#ff7a8a;--purple:#c4a7ff;--shadow:0 22px 60px #0007}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 20% 0%,#163356 0,#0a182a 35%,#06101c 80%);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}button,input{font:inherit}button{border:0;border-radius:16px;padding:13px 18px;font-weight:900;cursor:pointer;background:#213652;color:white}button:disabled{opacity:.35;cursor:not-allowed}.primary{background:var(--cyan);color:#062230}.gold{background:var(--gold);color:#2c2300}.green{background:var(--green);color:#062417}.danger{background:var(--red);color:#3a0911}.purple{background:var(--purple);color:#1d1234}.ghost{border:1px solid var(--line);background:#0b1728}.wrap{max-width:1240px;margin:auto;padding:22px}.hidden{display:none!important}.card{background:linear-gradient(180deg,#101f34ee,#0c1829ee);border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:var(--shadow)}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}.title{font-size:clamp(32px,4vw,58px);font-weight:1000;letter-spacing:-1px}.subtitle,.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);gap:18px}.stack{display:grid;gap:18px}.pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:#0b1728;border:1px solid var(--line);color:var(--muted);font-size:14px}.question{font-size:clamp(28px,4.1vw,58px);font-weight:1000;line-height:1.35;margin:16px 0}.bigPct{font-size:clamp(68px,11vw,150px);font-weight:1000;line-height:.9;color:var(--gold);text-align:center}.guessBadge{font-size:clamp(42px,7vw,95px);font-weight:1000;color:var(--cyan);text-align:center;margin:12px 0}.actions{display:flex;gap:10px;flex-wrap:wrap}.status{padding:12px 14px;border-radius:14px;background:#091523;border:1px solid var(--line);color:var(--muted);margin-top:14px}.scoreRow,.playerRow,.voteRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 13px;border:1px solid var(--line);background:#091523;border-radius:14px}.scores,.players,.votes{display:grid;gap:9px}.rank{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#1c3150;color:var(--gold);font-weight:1000}.scoreRow strong{font-size:22px}.roomCode{font-size:40px;font-weight:1000;letter-spacing:5px;color:var(--gold)}#qrcode{width:max-content;background:#fff;padding:10px;border-radius:14px;margin:12px auto}.joinUrl{direction:ltr;text-align:left;word-break:break-all;color:var(--cyan);font-size:12px}.center{text-align:center}.landing{max-width:720px;margin:7vh auto}.landing .card{padding:28px}.input{width:100%;padding:15px 16px;border-radius:15px;border:1px solid var(--line);background:#091523;color:white;outline:none}.playerShell{max-width:720px;margin:5vh auto}.playerQuestion{font-size:clamp(28px,7vw,52px);font-weight:1000;line-height:1.4;margin:18px 0}.rangeWrap{margin:24px 0}.rangeVal{text-align:center;font-size:74px;font-weight:1000;color:var(--cyan)}input[type=range]{width:100%;accent-color:#6ee7f9;height:34px}.choiceGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.choiceGrid.four{grid-template-columns:1fr 1fr}.choice{min-height:82px;font-size:22px}.higher{background:#213f5e}.lower{background:#412f55}.much{outline:2px solid var(--gold)}.waiting{font-size:22px;text-align:center;padding:28px 12px;color:var(--muted)}.delta{font-weight:1000;color:var(--green)}.roundGain{font-size:14px;color:var(--green)}.resultBox{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}.resultBox>div{background:#091523;border:1px solid var(--line);border-radius:18px;padding:15px;text-align:center}.resultLabel{color:var(--muted);font-size:13px}.resultNum{font-size:46px;font-weight:1000}.source{font-size:12px;color:var(--muted);margin-top:14px}.source a{color:var(--cyan)}.turnName{font-size:22px;font-weight:900;color:var(--purple)}.phase{color:var(--gold);font-weight:900}.winnerBanner{font-size:clamp(32px,5vw,68px);font-weight:1000;text-align:center;margin:22px 0}.tiny{font-size:12px;color:var(--muted)}.warning{background:#3a2d08;border-color:#6f5915;color:#ffe894}.voteSummary{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:16px 0}.voteChip{padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:#0b1728}.activeOutline{outline:2px solid var(--purple)}
+.avatar{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid #ffffff33;background:#1c3150;flex:0 0 auto}
+.avatar.sm{width:36px;height:36px}.avatar.lg{width:62px;height:62px;border-width:3px}
+.avatarPreview{width:132px;height:132px;border-radius:50%;object-fit:cover;border:3px solid var(--cyan);background:#0b1728;display:block;margin:12px auto}
+.photoBox{margin:16px 0;padding:14px;border:1px dashed #3b557b;border-radius:20px;background:#091523}
+.photoBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;border-radius:15px;background:#213652;color:white;font-weight:900;cursor:pointer}
+.person{display:flex;align-items:center;gap:10px;min-width:0}.personName{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.turnPerson{display:inline-flex;align-items:center;gap:9px}
+.connDot{width:9px;height:9px;border-radius:50%;display:inline-block;background:var(--red)}.connDot.ok{background:var(--green)}
+.joinButtonBusy{opacity:.7;pointer-events:none}
+
+@media(max-width:900px){.grid{grid-template-columns:1fr}.wrap{padding:13px}.card{padding:16px}.choice{font-size:18px;min-height:70px}.resultBox{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section id="landing" class="landing">
+    <div class="card center">
+      <div class="title">كم النسبة؟ 🕵️</div>
+      <p class="subtitle">واحد يخمّن النسبة، والبقية يقررون: الحقيقة أعلى أم أقل؟</p>
+      <div class="actions" style="justify-content:center;margin-top:20px"><button class="primary" onclick="startHost()">ابدأ كمضيف / شاشة التلفزيون</button></div>
+      <div style="margin-top:22px"><input id="manualRoom" class="input" placeholder="رمز الغرفة (10 أحرف)" maxlength="11"><button class="ghost" style="margin-top:10px;width:100%" onclick="joinManual()">دخول كلاعب</button></div>
+    </div>
+  </section>
+
+  <section id="hostView" class="hidden">
+    <div class="top"><div><div class="title">كم النسبة؟ 🕵️</div><div class="subtitle">شاشة المضيف</div></div><div class="pill">الجولة <b id="roundLabel">—</b></div></div>
+    <div class="grid">
+      <main class="card">
+        <div id="hostLobby">
+          <span class="pill">اللوبي</span>
+          <div class="question">خل الجميع يدخل، ثم ابدأ اللعبة. بنك النسخة الحالية: 99 سؤال سعودي نشط.</div>
+          <p class="muted">2–6 لاعبين: جولتان. 7–8 لاعبين: جولة واحدة مع خيار «أعلى بكثير / أقل بكثير».</p>
+          <div class="actions"><button id="startGameBtn" class="primary" onclick="beginGame()" disabled>ابدأ اللعبة</button></div>
+        </div>
+
+        <div id="hostGame" class="hidden">
+          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span class="pill turnPerson"><img id="turnAvatar" class="avatar sm hidden" alt=""><span>الدور: <b id="turnPlayer" class="turnName"></b></span></span><span class="pill">المرحلة: <b id="phaseText" class="phase"></b></span></div>
+          <div id="hostQuestion" class="question"></div>
+          <div id="hostGuessArea" class="hidden"><div class="muted center">تخمين اللاعب</div><div id="hostGuess" class="guessBadge">—</div></div>
+          <div id="voteProgress" class="status"></div>
+          <div id="hostResult" class="hidden">
+            <div class="resultBox"><div><div class="resultLabel">التخمين</div><div id="resultGuess" class="resultNum"></div></div><div><div class="resultLabel">النسبة الحقيقية</div><div id="resultTruth" class="resultNum" style="color:var(--gold)"></div></div></div>
+            <div id="resultDistance" class="winnerBanner"></div>
+            <div id="voteSummary" class="voteSummary"></div>
+            <div id="sourceBox" class="source"></div>
+          </div>
+          <div class="actions" style="margin-top:18px">
+            <button id="revealBtn" class="gold hidden" onclick="revealResult()">اكشف النتيجة</button>
+            <button id="nextTurnBtn" class="primary hidden" onclick="nextTurn()">الدور التالي</button>
+            <button id="skipBtn" class="ghost" onclick="skipTurn()">تخطي الدور</button>
+          </div>
+        </div>
+
+        <div id="hostGameOver" class="hidden center">
+          <span class="pill">انتهت اللعبة</span><div id="winnerBanner" class="winnerBanner"></div><div class="actions" style="justify-content:center"><button class="primary" onclick="newGameSamePlayers()">لعبة جديدة بنفس اللاعبين</button><button class="danger" onclick="location.reload()">غرفة جديدة</button></div>
+        </div>
+        <div id="hostStatus" class="status">أنشئ الغرفة وانتظر اللاعبين.</div>
+      </main>
+
+      <aside class="stack">
+        <div class="card center"><div class="muted">رمز الغرفة</div><div id="roomCode" class="roomCode">----</div><div id="qrcode"></div><div id="joinUrl" class="joinUrl"></div><div class="tiny">امسح QR من الجوال</div><div id="fileWarning" class="status warning hidden">لا تفتح الملف مباشرة بـ file:// إذا أردت دخول الجوالات. استخدم Netlify أو التشغيل المحلي المرفق.</div></div>
+        <div class="card"><h3>الترتيب</h3><div id="scoreboard" class="scores"></div></div>
+        <div class="card"><h3>اللاعبون <span id="playerCount" class="muted"></span></h3><div id="playersList" class="players"></div></div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="playerView" class="hidden playerShell">
+    <div class="card">
+      <div id="joinStep">
+        <div class="title" style="font-size:42px">ادخل اللعبة 🕵️</div>
+        <p class="muted">خذ صورة سريعة واكتب اسمك. صورتك ستظهر بجانب اسمك على شاشة اللعبة.</p>
+        <div class="photoBox center">
+          <img id="avatarPreview" class="avatarPreview hidden" alt="صورتك">
+          <div id="avatarPlaceholder" style="font-size:64px">📸</div>
+          <label class="photoBtn">خذ صورة / اختر صورة
+            <input id="avatarInput" type="file" accept="image/*" capture="user" hidden onchange="handleAvatarInput(this)">
+          </label>
+          <div id="photoHint" class="tiny" style="margin-top:9px">يفضل صورة وجه واضحة. يتم تصغيرها تلقائيًا قبل الإرسال.</div>
+        </div>
+        <input id="playerName" maxlength="24" class="input" placeholder="اسمك">
+        <button id="joinBtn" class="primary" style="margin-top:12px;width:100%" onclick="joinGame()">دخول</button>
+        <div id="joinStatus" class="status">جاري الاتصال بالغرفة…</div>
+      </div>
+      <div id="playerGame" class="hidden">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+          <span class="pill"><img id="pMyAvatar" class="avatar sm hidden" alt=""> الجولة <b id="pRound">—</b></span>
+          <span class="pill">سكورك <b id="pScore">0</b></span>
+        </div>
+        <div id="playerQuestion" class="playerQuestion">بانتظار اللعبة...</div>
+        <div id="guesserControls" class="hidden"><div class="muted center">كم تتوقع النسبة؟</div><div id="rangeVal" class="rangeVal">50%</div><div class="rangeWrap"><input id="guessRange" type="range" min="0" max="100" value="50" oninput="document.getElementById('rangeVal').textContent=this.value+'%'" /></div><button class="primary" style="width:100%" onclick="submitPrimaryGuess()">ثبت التخمين</button></div>
+        <div id="voterControls" class="hidden"><div class="muted center">تخمين <b id="pGuesserName"></b> هو:</div><div id="pGuess" class="guessBadge"></div><div id="voteChoices" class="choiceGrid"></div></div>
+        <div id="waitBox" class="waiting">انتظر دورك...</div>
+        <div id="playerResult" class="hidden"><div class="resultBox"><div><div class="resultLabel">التخمين</div><div id="pResultGuess" class="resultNum"></div></div><div><div class="resultLabel">الحقيقة</div><div id="pResultTruth" class="resultNum" style="color:var(--gold)"></div></div></div><div id="pRoundGain" class="winnerBanner"></div><div id="pResultText" class="status"></div></div>
+      </div>
+    </div>
+  </section>
+</div>
+<script>
+const QUESTIONS=[{"ID":"SA001","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين زاروا فعالية أو نشاطًا ثقافيًا واحدًا على الأقل خلال 2024؟","النسبة_الصحيحة":82,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"مو كل طلعة ثقافة… لكن خلونا نشوف كم واحد حضر شيئًا ثقافيًا فعلًا.","نص_الكشف_الصوتي":"النسبة الصحيحة هي اثنين وثمانين بالمية.","تعليق_قريب":"قريب جدًا، واضح إن عندك قراءة ممتازة للمشهد الثقافي.","تعليق_بعيد":"بعيد يا رجال… الثقافة طالعة أكثر مما توقعت.","تعليق_إصابة":"جابها! واضح إنك متابع الرزنامة الثقافية بنفسك."},{"ID":"SA002","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين زاروا فعالية أو نشاطًا ترفيهيًا واحدًا على الأقل خلال 2024؟","النسبة_الصحيحة":85,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"ترفيه؟ هنا التوقعات غالبًا ترتفع… السؤال: قد إيش فعلًا؟","نص_الكشف_الصوتي":"النسبة الصحيحة هي خمسة وثمانين بالمية.","تعليق_قريب":"قريب، أنت فاهم مزاج الناس.","تعليق_بعيد":"بعيد شوي… السعوديين طالعين أكثر مما حسبتها.","تعليق_إصابة":"بالضبط! كأنك ماسك أرقام الفعاليات."},{"ID":"SA003","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين زاروا المولات خلال 2024؟","النسبة_الصحيحة":62,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"المولات عندنا مو بس تسوق… أحيانًا هي الخطة كاملة.","نص_الكشف_الصوتي":"النسبة الصحيحة هي اثنين وستين بالمية.","تعليق_قريب":"قريب جدًا… واضح إنك تعرف علاقة الناس بالمولات.","تعليق_بعيد":"لا يا رجال، المول عنده حضور أقوى من كذا.","تعليق_إصابة":"مية مية! المول ما خذلك."},{"ID":"SA004","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين قضوا وقتًا في الصحراء أو على الشاطئ خلال 2024؟","النسبة_الصحيحة":60,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"بر ولا بحر؟ أيًا كان، السؤال كم نسبتهم؟","نص_الكشف_الصوتي":"النسبة الصحيحة هي ستين بالمية.","تعليق_قريب":"قريب… حسّك في الطلعات مضبوط.","تعليق_بعيد":"بعيد، الطلعات الخارجية أكثر انتشارًا مما توقعت.","تعليق_إصابة":"أصبتها! واضح إنك موزع الويكند صح."},{"ID":"SA005","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين زاروا الحدائق والمتنزهات خلال 2024؟","النسبة_الصحيحة":66,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"إذا الجو ساعد، الحديقة تصير خيار سهل جدًا.","نص_الكشف_الصوتي":"النسبة الصحيحة هي ستة وستين بالمية.","تعليق_قريب":"قريب جدًا، هذا رقم منطقي ولقطته.","تعليق_بعيد":"بعيد يا رجال… الحدائق داخلة بقوة.","تعليق_إصابة":"بالضبط! واضح إنك تعرف وش يصير نهاية الأسبوع."},{"ID":"SA006","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين حضروا احتفالات وطنية خلال 2024؟","النسبة_الصحيحة":40,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"اليوم الوطني، يوم التأسيس، مناسبات كثيرة… لكن كم واحد يحضر فعلًا؟","نص_الكشف_الصوتي":"النسبة الصحيحة هي أربعين بالمية.","تعليق_قريب":"قريب، تقديرك للحضور الشعبي مضبوط.","تعليق_بعيد":"بعيد شوي… الاحتفالات تجمع ناس أكثر مما توقعت.","تعليق_إصابة":"جابها! كأنك تعد الحضور بنفسك."},{"ID":"SA007","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين ذهبوا إلى السينما خلال 2024؟","النسبة_الصحيحة":25,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"السينما رجعت بقوة، بس لا تنخدع بالزحمة وقت الأفلام الكبيرة.","نص_الكشف_الصوتي":"النسبة الصحيحة هي خمسة وعشرين بالمية.","تعليق_قريب":"قريب جدًا… تخمين سينمائي محترم.","تعليق_بعيد":"بعيد يا رجال… مو كل الناس رايحين سينما.","تعليق_إصابة":"بالضبط! تذكرة مجانية لك."},{"ID":"SA008","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين زاروا مواقع التراث الثقافي خلال 2024؟","النسبة_الصحيحة":19,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"التراث حاضر بكل مكان… لكن الزيارة الفعلية شيء ثاني.","نص_الكشف_الصوتي":"النسبة الصحيحة هي تسعة عشر بالمية.","تعليق_قريب":"قريب، عندك حس جيد بحجم الاهتمام.","تعليق_بعيد":"بعيد شوي… المواقع التراثية أقل زيارة مما حسّيت.","تعليق_إصابة":"أصبتها! واضح إنك مخطط رحلات داخلي."},{"ID":"SA009","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين زاروا المتاحف خلال 2024؟","النسبة_الصحيحة":13,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"المتاحف شكلها هادئ… والأرقام أهدأ أو أعلى؟","نص_الكشف_الصوتي":"النسبة الصحيحة هي ثلاثة عشر بالمية.","تعليق_قريب":"قريب جدًا، تقدير موزون.","تعليق_بعيد":"بعيد يا رجال… المتاحف أقل انتشارًا من توقعك.","تعليق_إصابة":"بالضبط! بطاقة أمين متحف لك."},{"ID":"SA010","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين قرؤوا كتبًا خلال 2024؟","النسبة_الصحيحة":48,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"سؤال حساس: الناس تقول تقرأ… لكن الإحصاء يقول كم؟","نص_الكشف_الصوتي":"النسبة الصحيحة هي ثمانية وأربعين بالمية.","تعليق_قريب":"قريب، واضح إنك ما صدقت كل واحد يقول أحب القراءة.","تعليق_بعيد":"بعيد شوي… القراءة أوسع مما حسبت.","تعليق_إصابة":"جابها! رف الكتب يشهد لك."},{"ID":"SA011","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين قرؤوا الصحف خلال 2024؟","النسبة_الصحيحة":38,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"الصحف تغيّرت، لكن القراءة ما اختفت تمامًا.","نص_الكشف_الصوتي":"النسبة الصحيحة هي ثمانية وثلاثين بالمية.","تعليق_قريب":"قريب جدًا… توقعت التحول الإعلامي صح.","تعليق_بعيد":"بعيد، الصحف لسه عندها جمهور أكبر مما توقعت.","تعليق_إصابة":"بالضبط! نسخة أولى لك."},{"ID":"SA012","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين يقرؤون المجلات خلال 2024؟","النسبة_الصحيحة":17,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"المجلات تحديدًا… هل ما زالت موجودة في العادة اليومية؟","نص_الكشف_الصوتي":"النسبة الصحيحة هي سبعة عشر بالمية.","تعليق_قريب":"قريب، تقديرك واقعي.","تعليق_بعيد":"بعيد يا رجال… جمهور المجلات أصغر من كذا.","تعليق_إصابة":"أصبتها! واضح إنك متابع حتى الأرقام الهادية."},{"ID":"SA013","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين يمارسون الطبخ كنشاط ثقافي؟","النسبة_الصحيحة":20,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"الطبخ نشاط ثقافي؟ أكيد… والسؤال كم واحد يمارسه بهذا المعنى.","نص_الكشف_الصوتي":"النسبة الصحيحة هي عشرين بالمية.","تعليق_قريب":"قريب جدًا… المطبخ عطاك الإشارة الصح.","تعليق_بعيد":"بعيد شوي… النسبة أقل مما رفعتها.","تعليق_إصابة":"بالضبط! الشيف الإحصائي."},{"ID":"SA014","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين يمارسون الفنون التشكيلية؟","النسبة_الصحيحة":10,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"فرشاة وألوان ولوحة… كم واحد فعلًا يمارس الفنون التشكيلية؟","نص_الكشف_الصوتي":"النسبة الصحيحة هي عشرة بالمية.","تعليق_قريب":"قريب، حسّك الفني شغال.","تعليق_بعيد":"بعيد يا رجال… النسبة أصغر من توقعك.","تعليق_إصابة":"أصبتها! توقيع الفنان جاهز."},{"ID":"SA015","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين يمارسون الكتابة كنشاط ثقافي؟","النسبة_الصحيحة":8,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"كلنا نكتب رسائل… لكن هنا نقصد الكتابة كنشاط ثقافي.","نص_الكشف_الصوتي":"النسبة الصحيحة هي ثمانية بالمية.","تعليق_قريب":"قريب جدًا… فرّقت بين الكتابة اليومية والهواية.","تعليق_بعيد":"بعيد شوي… الكتّاب أقل من كذا.","تعليق_إصابة":"بالضبط! الكاتب الإحصائي."},{"ID":"SA016","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين يمارسون التصوير كنشاط ثقافي؟","النسبة_الصحيحة":7,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"التصوير منتشر بالجوال، لكن ممارسته كنشاط ثقافي أضيق بكثير.","نص_الكشف_الصوتي":"النسبة الصحيحة هي سبعة بالمية.","تعليق_قريب":"قريب، فهمت الفرق بين صورة عابرة وهواية.","تعليق_بعيد":"بعيد يا رجال… مو كل من صور صار مصور.","تعليق_إصابة":"أصبتها! عدسة على الرقم."},{"ID":"SA017","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين يمارسون العزف على آلة موسيقية كنشاط ثقافي؟","النسبة_الصحيحة":2,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"خلونا نشوف كم عازف مختبئ بين الناس.","نص_الكشف_الصوتي":"النسبة الصحيحة هي اثنين بالمية.","تعليق_قريب":"قريب جدًا… الرقم فعلًا صغير.","تعليق_بعيد":"بعيد، رفعت عدد الموسيقيين أكثر من الواقع.","تعليق_إصابة":"بالضبط! نغمة على الجرح."},{"ID":"SA018","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين يمارسون الغناء كنشاط ثقافي؟","النسبة_الصحيحة":2,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"الغناء في السيارة ما نحسبه… هنا نشاط ثقافي فعلي.","نص_الكشف_الصوتي":"النسبة الصحيحة هي اثنين بالمية.","تعليق_قريب":"قريب، عرفت إن التعريف أضيق.","تعليق_بعيد":"بعيد يا رجال… الكاريوكي ضحك عليك.","تعليق_إصابة":"أصبتها! المايك لك."},{"ID":"SA019","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين يمارسون تصميم الأزياء كنشاط ثقافي؟","النسبة_الصحيحة":2,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"تصميم الأزياء يبدو منتشر بصريًا… لكن الممارسة الفعلية؟","نص_الكشف_الصوتي":"النسبة الصحيحة هي اثنين بالمية.","تعليق_قريب":"قريب جدًا، الرقم فعلًا محدود.","تعليق_بعيد":"بعيد شوي… المصممين أقل مما توقعت.","تعليق_إصابة":"بالضبط! عرض أزياء على الرقم."},{"ID":"SA020","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين يمشون كنشاط ترفيهي أو رياضي؟","النسبة_الصحيحة":66,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"أسهل رياضة؟ غالبًا المشي. بس كم واحد يمارسه فعلًا؟","نص_الكشف_الصوتي":"النسبة الصحيحة هي ستة وستين بالمية.","تعليق_قريب":"قريب، هذا تخمين يمشي.","تعليق_بعيد":"بعيد يا رجال… المشي أوسع من كذا.","تعليق_إصابة":"بالضبط! عشرة آلاف خطوة لك."},{"ID":"SA021","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين يمارسون كرة القدم كنشاط ترفيهي أو رياضي؟","النسبة_الصحيحة":18,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"كرة القدم شعبية جدًا، لكن الممارسة شيء والمتابعة شيء ثاني.","نص_الكشف_الصوتي":"النسبة الصحيحة هي ثمانية عشر بالمية.","تعليق_قريب":"قريب جدًا… فرّقت بين المشجع واللاعب.","تعليق_بعيد":"بعيد، لا تحسب كل مشجع لاعب.","تعليق_إصابة":"أصبتها! هات الكورة."},{"ID":"SA022","التصنيف":"الثقافة والترفيه","السؤال_لعبة":"كم نسبة الأشخاص في السعودية الذين يمارسون السباحة كنشاط ترفيهي أو رياضي؟","النسبة_الصحيحة":9,"الجمهور_المقصود":"الأشخاص 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Household Culture and Entertainment Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"مع الحر عندنا، الواحد يتوقع السباحة أعلى… أو يمكن لا.","نص_الكشف_الصوتي":"النسبة الصحيحة هي تسعة بالمية.","تعليق_قريب":"قريب، تقديرك منطقي.","تعليق_بعيد":"بعيد يا رجال… السباحة أقل ممارسة مما تبدو.","تعليق_إصابة":"بالضبط! نزّل المايوه."},{"ID":"SA023","التصنيف":"الرياضة والصحة","السؤال_لعبة":"كم نسبة البالغين في السعودية الذين يمارسون نشاطًا بدنيًا 150 دقيقة أو أكثر أسبوعيًا؟","النسبة_الصحيحة":58,"الجمهور_المقصود":"البالغون 18 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Physical Activity Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435259/Physical%2BActivity%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"150 دقيقة حركة بالأسبوع… مو شرط نادي، المهم الحركة.","نص_الكشف_الصوتي":"النسبة الصحيحة هي ثمانية وخمسين بالمية.","تعليق_قريب":"قريب جدًا… قرأت نمط الحياة صح.","تعليق_بعيد":"بعيد شوي… البالغين أنشط مما توقعت.","تعليق_إصابة":"أصبتها! لياقتك الإحصائية ممتازة."},{"ID":"SA024","التصنيف":"الرياضة والصحة","السؤال_لعبة":"كم نسبة الأطفال والمراهقين في السعودية من 5 إلى 17 سنة الذين يمارسون 60 دقيقة أو أكثر من النشاط البدني يوميًا؟","النسبة_الصحيحة":19,"الجمهور_المقصود":"الأطفال والمراهقون 5–17 سنة","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Physical Activity Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435259/Physical%2BActivity%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"ساعة نشاط كل يوم للأطفال والمراهقين… الشرط مو سهل.","نص_الكشف_الصوتي":"النسبة الصحيحة هي تسعة عشر بالمية.","تعليق_قريب":"قريب، عرفت إن المعيار صارم.","تعليق_بعيد":"بعيد يا رجال… النسبة أقل بكثير مما تتخيل.","تعليق_إصابة":"بالضبط! هذا تخمين نشيط."},{"ID":"SA026","التصنيف":"الصحة","السؤال_لعبة":"كم نسبة البالغين في السعودية الذين يعانون من السمنة؟","النسبة_الصحيحة":24,"الجمهور_المقصود":"البالغون 15 سنة فأكثر","الدولة":"السعودية","السنة":"2023","المصدر":"GASTAT","عنوان_المصدر":"Health Determinants Statistics Publication 2023","رابط_المصدر":"https://www.stats.gov.sa/sites/default/files/Health-Determinants-Statistics-Publication-2023-EN_1.pdf","المقدمة_الصوتية":"هنا السؤال مو عن الوزن الزائد عمومًا، بل عن السمنة تحديدًا.","نص_الكشف_الصوتي":"النسبة الصحيحة هي أربعة وعشرين بالمية.","تعليق_قريب":"قريب جدًا… تقدير صحي مضبوط.","تعليق_بعيد":"بعيد شوي… النسبة أقل مما توقعت.","تعليق_إصابة":"بالضبط! ميزانك الإحصائي موزون."},{"ID":"SA027","التصنيف":"الصحة","السؤال_لعبة":"كم نسبة البالغين في السعودية الذين يتناولون الخضار مرة واحدة أو أكثر يوميًا؟","النسبة_الصحيحة":36,"الجمهور_المقصود":"البالغون 15 سنة فأكثر","الدولة":"السعودية","السنة":"2023","المصدر":"GASTAT","عنوان_المصدر":"Health Determinants Statistics Publication 2023","رابط_المصدر":"https://www.stats.gov.sa/sites/default/files/Health-Determinants-Statistics-Publication-2023-EN_1.pdf","المقدمة_الصوتية":"خضار كل يوم… سؤال بسيط ظاهريًا، لكن العادة مو بهذه السهولة.","نص_الكشف_الصوتي":"النسبة الصحيحة هي ستة وثلاثين بالمية.","تعليق_قريب":"قريب، توقعت العادة الغذائية بشكل جيد.","تعليق_بعيد":"بعيد يا رجال… الاستهلاك اليومي أقل من كذا.","تعليق_إصابة":"أصبتها! السلطة انتصرت."},{"ID":"SA028","التصنيف":"الصحة","السؤال_لعبة":"كم نسبة سكان السعودية الذين حصلوا على استشارة أسنان خلال آخر 12 شهرًا؟","النسبة_الصحيحة":13,"الجمهور_المقصود":"سكان السعودية","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Healthcare Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/1400941/Healthcare%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"زيارة الأسنان عادة مؤجلة عند كثير ناس… بس كم نسبتهم خلال سنة؟","نص_الكشف_الصوتي":"النسبة الصحيحة هي ثلاثة عشر بالمية.","تعليق_قريب":"قريب جدًا… واضح إنك تعرف سالفة تأجيل طبيب الأسنان.","تعليق_بعيد":"بعيد شوي… الزيارات أقل من توقعك.","تعليق_إصابة":"بالضبط! بدون حفر اليوم."},{"ID":"SA029","التصنيف":"الصحة","السؤال_لعبة":"كم نسبة البالغين في السعودية الذين وصلوا إلى ملفاتهم الطبية الإلكترونية عبر الإنترنت؟","النسبة_الصحيحة":24,"الجمهور_المقصود":"البالغون 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Healthcare Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/1400941/Healthcare%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"الملف الطبي صار بالجوال… لكن كم واحد دخل عليه فعلًا؟","نص_الكشف_الصوتي":"النسبة الصحيحة هي أربعة وعشرين بالمية.","تعليق_قريب":"قريب، تبني الخدمات الرقمية قرأته صح.","تعليق_بعيد":"بعيد يا رجال… الاستخدام الفعلي أقل من توقعك.","تعليق_إصابة":"أصبتها! دخول موحد على الرقم."},{"ID":"SA030","التصنيف":"الصحة","السؤال_لعبة":"كم نسبة البالغين في السعودية الذين استخدموا الإنترنت للحصول على معلومات صحية؟","النسبة_الصحيحة":20,"الجمهور_المقصود":"البالغون 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"GASTAT","عنوان_المصدر":"Healthcare Statistics Publication 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/1400941/Healthcare%2BStatistics%2BPublication%2B2024%2BEN.pdf","المقدمة_الصوتية":"قبل لا أحد يقول قوقلت الأعراض… خلونا نشوف كم واحد يسويها فعلًا.","نص_الكشف_الصوتي":"النسبة الصحيحة هي عشرين بالمية.","تعليق_قريب":"قريب جدًا… شكلك تعرف عيادة قوقل.","تعليق_بعيد":"بعيد شوي… البحث الصحي أقل انتشارًا مما حسبت.","تعليق_إصابة":"بالضبط! الدكتور قوقل يحييك."},{"ID":"SA031","التصنيف":"تقنية وإنترنت","السؤال_لعبة":"كم نسبة مستخدمي الإنترنت في السعودية اللي يستخدمون الخدمات الحكومية الإلكترونية؟","النسبة_الصحيحة":96,"الجمهور_المقصود":"مستخدمو الإنترنت في المملكة","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"أبشر ونفاذ وخدمات الحكومة… واضح إن المشوار صار من الجوال.","نص_الكشف_الصوتي":"والإجابة هي… ستة وتسعين بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA032","التصنيف":"تقنية وإنترنت","السؤال_لعبة":"كم نسبة مستخدمي الإنترنت في السعودية اللي يستخدمون الخدمات البنكية أونلاين؟","النسبة_الصحيحة":86,"الجمهور_المقصود":"مستخدمو الإنترنت في المملكة","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"المحفظة صارت في الجوال… بس كم واحد فعلًا يتعامل بنكيًا أونلاين؟","نص_الكشف_الصوتي":"والإجابة هي… ستة وثمانين بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA033","التصنيف":"تسوق","السؤال_لعبة":"كم نسبة مستخدمي الإنترنت في السعودية اللي يتسوقون أونلاين؟","النسبة_الصحيحة":77,"الجمهور_المقصود":"مستخدمو الإنترنت في المملكة","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"الكرتون عند الباب صار مشهد يومي… السؤال: عند كم واحد؟","نص_الكشف_الصوتي":"والإجابة هي… سبعة وسبعين بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA034","التصنيف":"ذكاء اصطناعي","السؤال_لعبة":"كم نسبة مستخدمي الإنترنت في السعودية اللي يستخدمون أدوات الذكاء الاصطناعي؟","النسبة_الصحيحة":45,"الجمهور_المقصود":"مستخدمو الإنترنت في المملكة","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"الذكاء الاصطناعي دخل الدراسة والشغل وحتى سوالفنا… بس هل وصل للنص؟","نص_الكشف_الصوتي":"والإجابة هي… خمسة وأربعين بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA035","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي زاروا السينما خلال السنة؟","النسبة_الصحيحة":25,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر في المملكة","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"فشار، شاشة كبيرة، وفيلم ساعتين… كم واحد راح السينما خلال السنة؟","نص_الكشف_الصوتي":"والإجابة هي… خمسة وعشرين بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA036","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي حضروا الاحتفالات الوطنية خلال السنة؟","النسبة_الصحيحة":40,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر في المملكة","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"أعلام وألعاب نارية وزحمة… كم واحد حضر احتفال وطني خلال السنة؟","نص_الكشف_الصوتي":"والإجابة هي… أربعين بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA037","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي زاروا متحف خلال السنة؟","النسبة_الصحيحة":13,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر في المملكة","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"اليوم عندنا سؤال يفرّق بين اللي يقول أحب المتاحف واللي يروح لها فعلًا.","نص_الكشف_الصوتي":"والإجابة هي… ثلاثة عشر بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA038","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي زاروا معرض كتاب خلال السنة؟","النسبة_الصحيحة":10,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر في المملكة","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"ريحة الكتب، أكياس ثقيلة، وكتاب ينشرى ويمكن ينقرأ… كم واحد زار معرض كتاب؟","نص_الكشف_الصوتي":"والإجابة هي… عشرة بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA039","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي حضروا حفلة موسيقية مباشرة خلال السنة؟","النسبة_الصحيحة":6,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر في المملكة","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"الصوت عالي والجوالات كلها مرفوعة… بس كم نسبة اللي حضروا حفلة مباشرة؟","نص_الكشف_الصوتي":"والإجابة هي… ستة بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA040","التصنيف":"قراءة","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي قرأوا كتب؟","النسبة_الصحيحة":48,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر في المملكة","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"سؤال حساس للي مكتبته أكبر من عدد الكتب اللي خلصها.","نص_الكشف_الصوتي":"والإجابة هي… ثمانية وأربعين بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA041","التصنيف":"ترفيه ونشاط","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي يمارسون المشي في وقت الفراغ؟","النسبة_الصحيحة":66,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر في المملكة","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"الممشى مليان بعد المغرب… هل الإحساس هذا يطابق الرقم؟","نص_الكشف_الصوتي":"والإجابة هي… ستة وستين بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA042","التصنيف":"ترفيه ونشاط","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي يمارسون كرة القدم في وقت الفراغ؟","النسبة_الصحيحة":18,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر في المملكة","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"كل حي فيه ملعب وكل قروب فيه مدرب… بس كم واحد يلعب فعلًا؟","نص_الكشف_الصوتي":"والإجابة هي… ثمانية عشر بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA043","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي يمارسون الطبخ كنشاط ثقافي؟","النسبة_الصحيحة":20,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر في المملكة","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"مو كل طبخة عشاء… بعض الناس يعتبرون الطبخ هواية بحد ذاته.","نص_الكشف_الصوتي":"والإجابة هي… عشرين بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA044","التصنيف":"سكن","السؤال_لعبة":"كم نسبة الأسر السعودية اللي تملك مسكنها؟","النسبة_الصحيحة":65,"الجمهور_المقصود":"الأسر السعودية","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء / وزارة البلديات والإسكان","عنوان_المصدر":"مؤشرات قابلية العيش في المدن السعودية 2025","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435245/GASTAT_LISC%2Breport_2025_EN.pdf/80b46893-12e0-2b26-2a54-70a1553169c1","المقدمة_الصوتية":"بيت العمر… كم نسبة الأسر السعودية اللي وصلت له فعلًا؟","نص_الكشف_الصوتي":"والإجابة هي… خمسة وستين بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA045","التصنيف":"سكن","السؤال_لعبة":"كم نسبة المساكن المشغولة بأسر سعودية اللي هي شقق؟","النسبة_الصحيحة":45,"الجمهور_المقصود":"المساكن المشغولة بأسر سعودية","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"نشرة إحصاءات المساكن 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/d/guest/housing-statistics-bulletin-2024-en-pdf","المقدمة_الصوتية":"فيلا ولا شقة؟ خلنا نشوف وش الشكل الأكثر حضورًا بين مساكن الأسر السعودية.","نص_الكشف_الصوتي":"والإجابة هي… خمسة وأربعين بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA046","التصنيف":"سكن","السؤال_لعبة":"كم نسبة المساكن المشغولة بأسر سعودية اللي هي فلل؟","النسبة_الصحيحة":31,"الجمهور_المقصود":"المساكن المشغولة بأسر سعودية","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"نشرة إحصاءات المساكن 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/d/guest/housing-statistics-bulletin-2024-en-pdf","المقدمة_الصوتية":"السؤال هذا ممكن يخدعك لأن صورة السكن في بالك مو شرط تكون صورة المملكة كلها.","نص_الكشف_الصوتي":"والإجابة هي… واحد وثلاثين بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA047","التصنيف":"تقنية وإنترنت","السؤال_لعبة":"كم نسبة مستخدمي الإنترنت في السعودية اللي يدخلون الإنترنت وهم خارج البيت أو أثناء التنقل؟","النسبة_الصحيحة":84,"الجمهور_المقصود":"مستخدمو الإنترنت في المملكة","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"إشارة الجوال صارت معنا في السيارة والكافيه وكل مكان… كم النسبة؟","نص_الكشف_الصوتي":"والإجابة هي… أربعة وثمانين بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA048","التصنيف":"تقنية وإنترنت","السؤال_لعبة":"كم نسبة مستخدمي الإنترنت في السعودية اللي يستخدمون الكمبيوتر للدخول للإنترنت؟","النسبة_الصحيحة":47,"الجمهور_المقصود":"مستخدمو الإنترنت في المملكة","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"الجوال أكل السوق… لكن الكمبيوتر للحين موجود. تتوقع عند كم واحد؟","نص_الكشف_الصوتي":"والإجابة هي… سبعة وأربعين بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA049","التصنيف":"تقنية وإنترنت","السؤال_لعبة":"كم نسبة مستخدمي الإنترنت في السعودية اللي يستخدمون التابلت للدخول للإنترنت؟","النسبة_الصحيحة":39,"الجمهور_المقصود":"مستخدمو الإنترنت في المملكة","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"بين الجوال واللابتوب فيه جهاز يحاول يثبت نفسه… التابلت.","نص_الكشف_الصوتي":"والإجابة هي… تسعة وثلاثين بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA050","التصنيف":"تقنية وإنترنت","السؤال_لعبة":"كم نسبة مستخدمي الإنترنت في السعودية اللي يقضون سبع ساعات أو أكثر يوميًا على الإنترنت؟","النسبة_الصحيحة":61,"الجمهور_المقصود":"مستخدمو الإنترنت في المملكة","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"سبع ساعات على الإنترنت مو رقم بسيط… السؤال: كم واحد وصلها أو تعداها؟","نص_الكشف_الصوتي":"والإجابة هي… واحد وستين بالمية!","تعليق_قريب":"قريب جدًا… واضح إن عندك رادار للإحصائيات.","تعليق_بعيد":"يا رجال… أنت والإحصائية كل واحد في جهة.","تعليق_إصابة":"يا سلام! جبتها على الجرح… بالضبط."},{"ID":"SA051","التصنيف":"تواصل اجتماعي","السؤال_لعبة":"كم نسبة مستخدمي الإنترنت في السعودية اللي يستخدمون واتساب؟","النسبة_الصحيحة":93,"الجمهور_المقصود":"مستخدمو الإنترنت","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"واتساب عندنا مو تطبيق… هذا فرد من العائلة.","نص_الكشف_الصوتي":"والإجابة هي… ثلاثة وتسعين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA052","التصنيف":"تواصل اجتماعي","السؤال_لعبة":"كم نسبة مستخدمي الإنترنت في السعودية اللي يستخدمون سناب شات؟","النسبة_الصحيحة":84,"الجمهور_المقصود":"مستخدمو الإنترنت","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"ستريك، قهوة، وتصوير الطريق… سناب حاضر بقوة.","نص_الكشف_الصوتي":"والإجابة هي… أربعة وثمانين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA053","التصنيف":"تواصل اجتماعي","السؤال_لعبة":"كم نسبة مستخدمي الإنترنت في السعودية اللي يستخدمون تيك توك؟","النسبة_الصحيحة":77,"الجمهور_المقصود":"مستخدمو الإنترنت","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"تدخل تشوف مقطع… تطلع بعد ساعة.","نص_الكشف_الصوتي":"والإجابة هي… سبعة وسبعين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA054","التصنيف":"تواصل اجتماعي","السؤال_لعبة":"كم نسبة مستخدمي الإنترنت في السعودية اللي يستخدمون يوتيوب؟","النسبة_الصحيحة":76,"الجمهور_المقصود":"مستخدمو الإنترنت","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"من شرح تغيير كفر إلى بودكاست ثلاث ساعات… يوتيوب لكل شيء.","نص_الكشف_الصوتي":"والإجابة هي… ستة وسبعين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA055","التصنيف":"تواصل اجتماعي","السؤال_لعبة":"كم نسبة مستخدمي الإنترنت في السعودية اللي يستخدمون إنستغرام؟","النسبة_الصحيحة":41,"الجمهور_المقصود":"مستخدمو الإنترنت","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"إنستغرام شكله كبير… لكن هل استخدامه قريب من سناب؟","نص_الكشف_الصوتي":"والإجابة هي… واحد وأربعين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA056","التصنيف":"تواصل اجتماعي","السؤال_لعبة":"كم نسبة مستخدمي الإنترنت في السعودية اللي يستخدمون منصة X؟","النسبة_الصحيحة":35,"الجمهور_المقصود":"مستخدمو الإنترنت","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"خبر عاجل، نقاش كروي، ثم هوشة… أهلًا بمنصة X.","نص_الكشف_الصوتي":"والإجابة هي… خمسة وثلاثين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA057","التصنيف":"مكالمات","السؤال_لعبة":"كم نسبة مستخدمي الإنترنت في السعودية اللي يستخدمون تطبيقات المكالمات الصوتية أو المرئية؟","النسبة_الصحيحة":90,"الجمهور_المقصود":"مستخدمو الإنترنت","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"مين للحين يتصل اتصال عادي؟","نص_الكشف_الصوتي":"والإجابة هي… تسعين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA058","التصنيف":"مكالمات","السؤال_لعبة":"من مستخدمي تطبيقات المكالمات في السعودية، كم نسبة اللي يستخدمون سناب شات للمكالمات؟","النسبة_الصحيحة":72,"الجمهور_المقصود":"مستخدمو تطبيقات المكالمات","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"سناب مو بس ستوري… ناس كثير يستخدمونه اتصال بعد.","نص_الكشف_الصوتي":"والإجابة هي… اثنين وسبعين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA059","التصنيف":"مكالمات","السؤال_لعبة":"من مستخدمي تطبيقات المكالمات في السعودية، كم نسبة اللي يستخدمون فيس تايم للمكالمات؟","النسبة_الصحيحة":17,"الجمهور_المقصود":"مستخدمو تطبيقات المكالمات","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"السؤال هذا بيكشف قد إيش فيس تايم حاضر.","نص_الكشف_الصوتي":"والإجابة هي… سبعة عشر بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA060","التصنيف":"مكالمات","السؤال_لعبة":"من مستخدمي تطبيقات المكالمات في السعودية، كم نسبة اللي يستخدمون تيليجرام للمكالمات؟","النسبة_الصحيحة":12,"الجمهور_المقصود":"مستخدمو تطبيقات المكالمات","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"تيليجرام للمكالمات؟ إي نعم، وله جمهوره.","نص_الكشف_الصوتي":"والإجابة هي… اثنعش بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA061","التصنيف":"تخزين سحابي","السؤال_لعبة":"كم نسبة مستخدمي الإنترنت في السعودية اللي يستخدمون خدمات التخزين السحابي؟","النسبة_الصحيحة":78,"الجمهور_المقصود":"مستخدمو الإنترنت","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"صورك وين؟ بالجوال؟ بالسحابة؟ ولا ما تدري؟","نص_الكشف_الصوتي":"والإجابة هي… ثمانية وسبعين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA062","التصنيف":"تخزين سحابي","السؤال_لعبة":"من مستخدمي التخزين السحابي في السعودية، كم نسبة اللي يستخدمون iCloud؟","النسبة_الصحيحة":50,"الجمهور_المقصود":"مستخدمو التخزين السحابي","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"رسالة: مساحة iCloud ممتلئة… مألوفة؟","نص_الكشف_الصوتي":"والإجابة هي… خمسين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA063","التصنيف":"تخزين سحابي","السؤال_لعبة":"من مستخدمي التخزين السحابي في السعودية، كم نسبة اللي يستخدمون Google Drive؟","النسبة_الصحيحة":32,"الجمهور_المقصود":"مستخدمو التخزين السحابي","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"ملف نهائي نهائي 2… غالبًا في درايف.","نص_الكشف_الصوتي":"والإجابة هي… اثنين وثلاثين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA064","التصنيف":"تخزين سحابي","السؤال_لعبة":"من مستخدمي التخزين السحابي في السعودية، كم نسبة اللي يستخدمون OneDrive؟","النسبة_الصحيحة":7,"الجمهور_المقصود":"مستخدمو التخزين السحابي","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"ون درايف موجود… السؤال كم واحد فعلًا يستخدمه؟","نص_الكشف_الصوتي":"والإجابة هي… سبعة بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA065","التصنيف":"ذكاء اصطناعي","السؤال_لعبة":"من مستخدمي الذكاء الاصطناعي في السعودية، كم نسبة اللي يستخدمون الذكاء الاصطناعي للبحث عن المعلومات؟","النسبة_الصحيحة":81,"الجمهور_المقصود":"مستخدمو الذكاء الاصطناعي","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"بدل ما تسأل قوقل… صار عندك أحد تجاوبه وتسأله مرة ثانية.","نص_الكشف_الصوتي":"والإجابة هي… واحد وثمانين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA066","التصنيف":"ذكاء اصطناعي","السؤال_لعبة":"من مستخدمي الذكاء الاصطناعي في السعودية، كم نسبة اللي يستخدمون الذكاء الاصطناعي لتوليد الأفكار؟","النسبة_الصحيحة":40,"الجمهور_المقصود":"مستخدمو الذكاء الاصطناعي","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"إذا علقت الفكرة… فيه زميل رقمي للعصف الذهني.","نص_الكشف_الصوتي":"والإجابة هي… أربعين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA067","التصنيف":"ذكاء اصطناعي","السؤال_لعبة":"من مستخدمي الذكاء الاصطناعي في السعودية، كم نسبة اللي يستخدمون الذكاء الاصطناعي للدراسة والتعليم؟","النسبة_الصحيحة":38,"الجمهور_المقصود":"مستخدمو الذكاء الاصطناعي","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"الواجب صار عنده مساعد جديد.","نص_الكشف_الصوتي":"والإجابة هي… ثمانية وثلاثين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA068","التصنيف":"ذكاء اصطناعي","السؤال_لعبة":"من مستخدمي الذكاء الاصطناعي في السعودية، كم نسبة اللي يستخدمون الذكاء الاصطناعي لصناعة صور أو فيديو أو عروض؟","النسبة_الصحيحة":26,"الجمهور_المقصود":"مستخدمو الذكاء الاصطناعي","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"صورة، فيديو، بوربوينت… الذكاء الاصطناعي دخل الاستديو.","نص_الكشف_الصوتي":"والإجابة هي… ستة وعشرين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA069","التصنيف":"ذكاء اصطناعي","السؤال_لعبة":"من مستخدمي الذكاء الاصطناعي في السعودية، كم نسبة اللي يستخدمون الذكاء الاصطناعي للترجمة؟","النسبة_الصحيحة":25,"الجمهور_المقصود":"مستخدمو الذكاء الاصطناعي","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"ترجم لي… بس لا تعطيني ترجمة 2012.","نص_الكشف_الصوتي":"والإجابة هي… خمسة وعشرين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA070","التصنيف":"ذكاء اصطناعي","السؤال_لعبة":"من مستخدمي الذكاء الاصطناعي في السعودية، كم نسبة اللي يستخدمون الذكاء الاصطناعي لمهام العمل؟","النسبة_الصحيحة":17,"الجمهور_المقصود":"مستخدمو الذكاء الاصطناعي","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"فيه ناس عندهم موظف ما ينام.","نص_الكشف_الصوتي":"والإجابة هي… سبعة عشر بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA071","التصنيف":"ذكاء اصطناعي","السؤال_لعبة":"من مستخدمي الذكاء الاصطناعي في السعودية، كم نسبة اللي يستخدمون الذكاء الاصطناعي للكتابة؟","النسبة_الصحيحة":14,"الجمهور_المقصود":"مستخدمو الذكاء الاصطناعي","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"رسالة، تقرير، أو صياغة… مين صار يستعين بالذكاء الاصطناعي؟","نص_الكشف_الصوتي":"والإجابة هي… أربعة عشر بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA072","التصنيف":"ذكاء اصطناعي","السؤال_لعبة":"من مستخدمي الذكاء الاصطناعي في السعودية، كم نسبة اللي يستخدمون الذكاء الاصطناعي للبرمجة والمهام التقنية؟","النسبة_الصحيحة":14,"الجمهور_المقصود":"مستخدمو الذكاء الاصطناعي","الدولة":"السعودية","السنة":"2025","المصدر":"هيئة الاتصالات والفضاء والتقنية","عنوان_المصدر":"تقرير إنترنت السعودية 2025","رابط_المصدر":"https://www.cst.gov.sa/en/knowledge-center/reports/saudi-internet-report-25-dashboard","المقدمة_الصوتية":"كود يكتب كود… وصلنا المستقبل.","نص_الكشف_الصوتي":"والإجابة هي… أربعة عشر بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA073","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا زيارة المولات خلال السنة؟","النسبة_الصحيحة":62,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"هل المول عندنا تسوق… ولا نشاط اجتماعي رسمي؟","نص_الكشف_الصوتي":"والإجابة هي… اثنين وستين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA074","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا قضاء وقت في البر أو على الشاطئ خلال السنة؟","النسبة_الصحيحة":60,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"بر ولا بحر؟ المهم إننا نطلع.","نص_الكشف_الصوتي":"والإجابة هي… ستين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA075","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا زيارة مدن الألعاب والملاهي خلال السنة؟","النسبة_الصحيحة":33,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"ألعاب، صراخ، وانتظار بالدور… كم واحد دخل التجربة؟","نص_الكشف_الصوتي":"والإجابة هي… ثلاثة وثلاثين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA076","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا العروض المباشرة في المقاهي والمطاعم خلال السنة؟","النسبة_الصحيحة":27,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"العشاء معه عرض مباشر… كم واحد جربها؟","نص_الكشف_الصوتي":"والإجابة هي… سبعة وعشرين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA077","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا مهرجانات التسوق خلال السنة؟","النسبة_الصحيحة":24,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"تخفيضات وفعاليات وزحمة… مهرجان التسوق له جمهوره.","نص_الكشف_الصوتي":"والإجابة هي… أربعة وعشرين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA078","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا حدائق الحيوان أو السفاري خلال السنة؟","النسبة_الصحيحة":20,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"آخر مرة شفت زرافة مو في الجوال متى؟","نص_الكشف_الصوتي":"والإجابة هي… عشرين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA079","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا المراكز الترفيهية خلال السنة؟","النسبة_الصحيحة":19,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"بولينغ وألعاب وتجارب… المراكز الترفيهية صارت كثيرة.","نص_الكشف_الصوتي":"والإجابة هي… تسعة عشر بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA080","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا الفعاليات الترفيهية خلال السنة؟","النسبة_الصحيحة":18,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"كل أسبوع فيه فعالية… بس كم واحد يروح؟","نص_الكشف_الصوتي":"والإجابة هي… ثمانية عشر بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA081","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا العروض الترفيهية خلال السنة؟","النسبة_الصحيحة":14,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"العرض موجود، السؤال كم واحد كان في الجمهور؟","نص_الكشف_الصوتي":"والإجابة هي… أربعة عشر بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA082","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا الحدائق المائية خلال السنة؟","النسبة_الصحيحة":9,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"موية وزحاليق وشمس… كم واحد راح حديقة مائية؟","نص_الكشف_الصوتي":"والإجابة هي… تسعة بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA083","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا الحدائق والمنتزهات خلال السنة؟","النسبة_الصحيحة":66,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"إذا الجو ضبط، نصف المدينة تلقاها في الحديقة… أو أكثر؟","نص_الكشف_الصوتي":"والإجابة هي… ستة وستين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA084","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا مهرجانات العيد خلال السنة؟","النسبة_الصحيحة":21,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"بعد المعايدة… وين نروح؟","نص_الكشف_الصوتي":"والإجابة هي… واحد وعشرين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA085","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا مواقع التراث الثقافي خلال السنة؟","النسبة_الصحيحة":19,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"بيوت طين وقصص أقدم منا كلنا.","نص_الكشف_الصوتي":"والإجابة هي… تسعة عشر بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA086","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا المهرجانات الشعبية التقليدية خلال السنة؟","النسبة_الصحيحة":17,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"تراث، أكلات، وعروض شعبية… كم واحد حضر؟","نص_الكشف_الصوتي":"والإجابة هي… سبعة عشر بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA087","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا المهرجانات الوطنية للتراث خلال السنة؟","النسبة_الصحيحة":17,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"التراث حاضر… بس هل الجمهور كبير؟","نص_الكشف_الصوتي":"والإجابة هي… سبعة عشر بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA088","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا المكتبات العامة خلال السنة؟","النسبة_الصحيحة":8,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"هنا بنعرف المكتبة العامة مكان نروحه… ولا بس نعرف إنه موجود.","نص_الكشف_الصوتي":"والإجابة هي… ثمانية بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA089","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا المعارض الفنية خلال السنة؟","النسبة_الصحيحة":7,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"لوحة بيضاء ونقطة في النص… لا تسأل عن السعر.","نص_الكشف_الصوتي":"والإجابة هي… سبعة بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA090","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا المسرحيات خلال السنة؟","النسبة_الصحيحة":4,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"الستارة تفتح… كم واحد كان جالس قدامها؟","نص_الكشف_الصوتي":"والإجابة هي… أربعة بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA091","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا الأمسيات الأدبية والشعرية خلال السنة؟","النسبة_الصحيحة":3,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"بيت شعر، تصفيق هادي، وقهوة… كم واحد حضر؟","نص_الكشف_الصوتي":"والإجابة هي… ثلاثة بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA092","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا الفنون التشكيلية كنشاط ثقافي خلال السنة؟","النسبة_الصحيحة":10,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"ألوان وفرشاة… ونكتشف فجأة إن فينا فنان.","نص_الكشف_الصوتي":"والإجابة هي… عشرة بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA093","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا الكتابة كنشاط ثقافي خلال السنة؟","النسبة_الصحيحة":8,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"كلنا نكتب واتساب… بس المقصود هنا كتابة فعلية.","نص_الكشف_الصوتي":"والإجابة هي… ثمانية بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA094","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا التصوير كنشاط ثقافي خلال السنة؟","النسبة_الصحيحة":7,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"وجود آيفون برو ما يخليك مصور.","نص_الكشف_الصوتي":"والإجابة هي… سبعة بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA095","التصنيف":"ثقافة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا العزف على آلة موسيقية خلال السنة؟","النسبة_الصحيحة":3,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"في كل عائلة واحد يقول بعرف أعزف… الإحصائية لها رأي.","نص_الكشف_الصوتي":"والإجابة هي… ثلاثة بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA096","التصنيف":"رياضة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا ركوب الدراجة في وقت الفراغ خلال السنة؟","النسبة_الصحيحة":3,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"الدراجات شكلها منتشرة… لكن على مستوى المملكة؟","نص_الكشف_الصوتي":"والإجابة هي… ثلاثة بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA097","التصنيف":"رياضة وترفيه","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا التنس أو البادل في وقت الفراغ خلال السنة؟","النسبة_الصحيحة":2,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"بادل في كل زاوية… هل الضجة أكبر من النسبة؟","نص_الكشف_الصوتي":"والإجابة هي… اثنين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA098","التصنيف":"قراءة","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا قراءة الصحف خلال السنة؟","النسبة_الصحيحة":38,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"صحيفة ورق أو رقمية… القراءة الصحفية للحين موجودة.","نص_الكشف_الصوتي":"والإجابة هي… ثمانية وثلاثين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA099","التصنيف":"قراءة","السؤال_لعبة":"كم نسبة الأفراد بعمر 15 سنة فأكثر في السعودية اللي سجلوا قراءة المجلات خلال السنة؟","النسبة_الصحيحة":17,"الجمهور_المقصود":"الأفراد 15 سنة فأكثر","الدولة":"السعودية","السنة":"2024","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات الثقافة والترفيه الأسري 2024","رابط_المصدر":"https://www.stats.gov.sa/documents/20117/2435273/Household%2BCulture%2Band%2BEntertainment%2BStatistics%2BPublication%2B2024%2BEN.pdf/591d6f59-c7ae-5ef4-0190-56643b41f4e7","المقدمة_الصوتية":"المجلة كانت تنتظرنا عند الحلاق… الحين كم واحد يقرأها؟","نص_الكشف_الصوتي":"والإجابة هي… سبعة عشر بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."},{"ID":"SA100","التصنيف":"صحة","السؤال_لعبة":"كم نسبة البالغين في السعودية المصنفين ضمن السمنة؟","النسبة_الصحيحة":24,"الجمهور_المقصود":"البالغون في المملكة","الدولة":"السعودية","السنة":"2023","المصدر":"الهيئة العامة للإحصاء","عنوان_المصدر":"إحصاءات المحددات الصحية 2023","رابط_المصدر":"https://www.stats.gov.sa/en","المقدمة_الصوتية":"هذا من الأرقام اللي إحساسنا الشخصي فيها غالبًا يخدعنا.","نص_الكشف_الصوتي":"والإجابة هي… أربعة وعشرين بالمية!","تعليق_قريب":"قريب جدًا! واضح إن إحساسك بالإحصائيات مضبوط.","تعليق_بعيد":"يا رجال… الرقم راح جهة وتخمينك راح الجهة الثانية.","تعليق_إصابة":"يا سلام عليك! جبتها بالضبط."}];
+
+let mode=null,mqttClient=null,roomCode=null,roomTopic=null,eventTopic=null,cryptoKey=null,connected=false,everConnected=false;
+let players={}; // token -> {name,avatar,score,online,lastSeen,lastGain}
+let phase='lobby',round=0,totalRounds=0,turnOrder=[],turnIndex=-1,currentQuestion=null,primaryGuess=null,votes={},revealed=false,usedQuestionIds=new Set();
+let myToken=localStorage.getItem('percentGameToken')||crypto.randomUUID(); localStorage.setItem('percentGameToken',myToken);
+let myAvatar=localStorage.getItem('percentGameAvatar')||'';
+let joinedName='',hasJoined=false,joining=false,heartbeatTimer=null,hostPresenceTimer=null,connectFallbackTimer=null;
+let brokerIndex=0;
+
+const BROKERS=[
+  {name:'EMQX',url:'wss://broker.emqx.io:8084/mqtt'},
+  {name:'HiveMQ',url:'wss://broker.hivemq.com:8884/mqtt'}
+];
+const ROOM_ALPHABET='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const $=id=>document.getElementById(id);
+const show=id=>$(id)&&$(id).classList.remove('hidden');
+const hide=id=>$(id)&&$(id).classList.add('hidden');
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+function avatarSrc(s){return typeof s==='string' && /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(s) && s.length<45000 ? s : ''}
+function avatarHTML(p,cls='avatar'){const a=avatarSrc(p?.avatar);return a?`<img class="${cls}" src="${a}" alt="">`:`<span class="${cls}" style="display:grid;place-items:center;font-weight:1000">${esc((p?.name||'?').slice(0,1))}</span>`}
+function cleanRoomCode(s){return String(s||'').toUpperCase().replace(/[^A-Z2-9]/g,'').replace(/[IO01]/g,'').slice(0,10)}
+function makeRoomCode(preferredBroker=null){
+  let out='';
+  const chars=[...ROOM_ALPHABET].filter((_,i)=>preferredBroker===null || i%2===preferredBroker);
+  out+=chars[Math.floor(Math.random()*chars.length)];
+  for(let i=1;i<10;i++) out+=ROOM_ALPHABET[Math.floor(Math.random()*ROOM_ALPHABET.length)];
+  return out
+}
+function brokerForRoom(code){const i=Math.max(0,ROOM_ALPHABET.indexOf(code[0]));return i%2}
+function formatRoomCode(code){return code?code.slice(0,5)+'-'+code.slice(5):'----'}
+function activeToken(){return turnOrder[turnIndex]||null}
+function activePlayer(){return players[activeToken()]||null}
+function allowExtreme(){return totalRounds===1 || round>=2}
+function onlineTokens(){return Object.keys(players)}
+function expectedVoters(){return onlineTokens().filter(t=>t!==activeToken())}
+function allVoted(){const e=expectedVoters();return e.length>0 && e.every(t=>votes[t])}
+
+let recentQuestionCategories=[],recentQuestionSources=[];
+function pickQuestion(){
+  let pool=QUESTIONS.filter(q=>!usedQuestionIds.has(q.ID));
+  if(!pool.length){usedQuestionIds.clear();pool=QUESTIONS}
+  let preferred=pool.filter(q=>!recentQuestionCategories.includes(q["التصنيف"])&&!recentQuestionSources.includes(q["رابط_المصدر"]));
+  if(!preferred.length) preferred=pool.filter(q=>q["التصنيف"]!==recentQuestionCategories[recentQuestionCategories.length-1]);
+  if(!preferred.length) preferred=pool;
+  const q=preferred[Math.floor(Math.random()*preferred.length)];
+  usedQuestionIds.add(q.ID);
+  recentQuestionCategories.push(q["التصنيف"]);
+  recentQuestionSources.push(q["رابط_المصدر"]);
+  recentQuestionCategories=recentQuestionCategories.slice(-2);
+  recentQuestionSources=recentQuestionSources.slice(-3);
+  return q
+}
+
+/* ---------- Room encryption ---------- */
+function bytesToB64u(bytes){
+  let bin='',chunk=0x8000;
+  for(let i=0;i<bytes.length;i+=chunk) bin+=String.fromCharCode(...bytes.subarray(i,i+chunk));
+  return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')
+}
+function b64uToBytes(s){
+  s=s.replace(/-/g,'+').replace(/_/g,'/');
+  while(s.length%4)s+='=';
+  const bin=atob(s),out=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);
+  return out
+}
+async function sha256Bytes(text){return new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text)))}
+async function setupRoom(code){
+  roomCode=cleanRoomCode(code);
+  const keyBytes=await sha256Bytes('percent-ar-key-v4:'+roomCode);
+  cryptoKey=await crypto.subtle.importKey('raw',keyBytes,{name:'AES-GCM'},false,['encrypt','decrypt']);
+  const topicHash=await sha256Bytes('percent-ar-topic-v4:'+roomCode);
+  roomTopic='percent-ar/v4/'+[...topicHash.slice(0,16)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  eventTopic=roomTopic+'/events';
+}
+async function encryptObj(obj){
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const plain=new TextEncoder().encode(JSON.stringify(obj));
+  const cipher=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},cryptoKey,plain));
+  return bytesToB64u(iv)+'.'+bytesToB64u(cipher)
+}
+async function decryptObj(payload){
+  try{
+    const [a,b]=String(payload).split('.');
+    if(!a||!b)return null;
+    const iv=b64uToBytes(a),cipher=b64uToBytes(b);
+    const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv},cryptoKey,cipher);
+    return JSON.parse(new TextDecoder().decode(plain))
+  }catch{return null}
+}
+
+/* ---------- MQTT transport ---------- */
+async function publishEvent(obj,retain=false){
+  if(!mqttClient||!eventTopic)return false;
+  try{
+    const payload=await encryptObj({...obj,v:4,at:Date.now()});
+    mqttClient.publish(eventTopic,payload,{qos:1,retain});
+    return true
+  }catch{return false}
+}
+function setHostConnectionStatus(text,ok=false){
+  const el=$('hostStatus'); if(!el)return;
+  el.innerHTML=`<span class="connDot ${ok?'ok':''}"></span> ${esc(text)}`
+}
+function setPlayerConnectionStatus(text,ok=false){
+  const el=$('joinStatus'); if(!el)return;
+  el.innerHTML=`<span class="connDot ${ok?'ok':''}"></span> ${esc(text)}`
+}
+async function connectMqtt(role,{allowFallback=false}={}){
+  brokerIndex=brokerForRoom(roomCode);
+  const broker=BROKERS[brokerIndex];
+  if(mqttClient){try{mqttClient.end(true)}catch{}}
+  connected=false;everConnected=false;
+  if(connectFallbackTimer)clearTimeout(connectFallbackTimer);
+
+  let willPayload;
+  if(role==='player') willPayload=await encryptObj({to:'host',from:myToken,type:'offline',token:myToken,v:4,at:Date.now()});
+  const opts={
+    clientId:'pct_'+role+'_'+crypto.randomUUID().replace(/-/g,'').slice(0,18),
+    clean:true,
+    reconnectPeriod:1500,
+    connectTimeout:6500,
+    keepalive:20,
+    protocolVersion:4,
+    resubscribe:true
+  };
+  if(willPayload) opts.will={topic:eventTopic,payload:willPayload,qos:1,retain:false};
+
+  if(role==='host')setHostConnectionStatus('جاري فتح غرفة اللعب عبر '+broker.name+'…');
+  else setPlayerConnectionStatus('جاري الاتصال بالغرفة عبر '+broker.name+'…');
+
+  mqttClient=mqtt.connect(broker.url,opts);
+
+  mqttClient.on('connect',()=>{
+    connected=true; everConnected=true;
+    mqttClient.subscribe(eventTopic,{qos:1},async err=>{
+      if(err){
+        role==='host'?setHostConnectionStatus('تعذر الاشتراك في الغرفة. جاري إعادة المحاولة…'):setPlayerConnectionStatus('تعذر دخول قناة الغرفة. جاري إعادة المحاولة…');
+        return
+      }
+      if(role==='host'){
+        finalizeHostInvite();
+        setHostConnectionStatus(`الغرفة متصلة عبر ${broker.name} — جاهزة لدخول اللاعبين.`,true);
+        broadcastState();
+      }else{
+        setPlayerConnectionStatus(`متصل بالغرفة عبر ${broker.name} ✅`,true);
+        if(hasJoined&&joinedName) sendJoin();
+      }
+    })
+  });
+  mqttClient.on('message',async(topic,payload)=>{
+    if(topic!==eventTopic)return;
+    const d=await decryptObj(payload.toString());
+    if(!d||d.v!==4)return;
+    if(mode==='host'&&d.to==='host')handleHostData(d);
+    if(mode==='player'&&(d.to==='all'||d.to===myToken))handlePlayerData(d);
+  });
+  mqttClient.on('reconnect',()=>{
+    connected=false;
+    role==='host'?setHostConnectionStatus('انقطع الاتصال لحظيًا — جاري إعادة الاتصال تلقائيًا…'):setPlayerConnectionStatus('انقطع الاتصال لحظيًا — جاري إعادة الاتصال تلقائيًا…')
+  });
+  mqttClient.on('offline',()=>{
+    connected=false;
+    role==='host'?setHostConnectionStatus('الشبكة غير متاحة حاليًا — ستعود اللعبة تلقائيًا عند رجوع الاتصال.'):setPlayerConnectionStatus('الشبكة غير متاحة حاليًا — سنعيد الاتصال تلقائيًا.')
+  });
+  mqttClient.on('error',()=>{ connected=false });
+
+  if(role==='host'&&allowFallback){
+    connectFallbackTimer=setTimeout(async()=>{
+      if(everConnected)return;
+      try{mqttClient.end(true)}catch{}
+      const other=1-brokerIndex;
+      roomCode=makeRoomCode(other);
+      await setupRoom(roomCode);
+      $('roomCode').textContent='…';
+      setHostConnectionStatus(`تعذر الاتصال بالخادم الأول — أجرب ${BROKERS[other].name} تلقائيًا…`);
+      connectMqtt('host',{allowFallback:false});
+    },7500)
+  }
+}
+
+/* ---------- Host ---------- */
+async function startHost(){
+  mode='host';hide('landing');show('hostView');
+  if(location.protocol==='file:')show('fileWarning');
+  roomCode=makeRoomCode(0);
+  await setupRoom(roomCode);
+  $('roomCode').textContent='…';
+  await connectMqtt('host',{allowFallback:true});
+  if(hostPresenceTimer)clearInterval(hostPresenceTimer);
+  // عضوية اللاعب في الغرفة دائمة حتى لو نام الجوال أو توقف المتصفح مؤقتًا.
+  // لا نحذف/نغيّب اللاعب تلقائيًا بناءً على heartbeat.
+}
+function finalizeHostInvite(){
+  $('roomCode').textContent=formatRoomCode(roomCode);
+  const base=location.protocol==='file:'?location.href.split('?')[0]:location.origin+location.pathname;
+  const url=base+'?room='+roomCode;
+  $('joinUrl').textContent=url;
+  $('qrcode').innerHTML='';
+  new QRCode($('qrcode'),{text:url,width:180,height:180});
+}
+async function handleHostData(d){
+  if(d.type==='join'){
+    if(phase!=='lobby'&&!players[d.token]){
+      publishEvent({to:d.token,type:'rejected',reason:'اللعبة بدأت بالفعل. انتظر اللعبة القادمة.'});return
+    }
+    const name=String(d.name||'').trim().slice(0,24);
+    const avatar=avatarSrc(d.avatar);
+    if(!name||!avatar){
+      publishEvent({to:d.token,type:'rejected',reason:'اكتب اسمك وخذ صورة قبل الدخول.'});return
+    }
+    const p=players[d.token]||{score:0,lastGain:0};
+    players[d.token]={...p,name,avatar,online:true,lastSeen:Date.now()};
+    renderHost();
+    await publishEvent({to:d.token,type:'joined'});
+    broadcastState();
+    return
+  }
+  if(d.type==='heartbeat'&&players[d.token]){
+    players[d.token].lastSeen=Date.now();
+    players[d.token].online=true;
+    return
+  }
+  if(d.type==='offline'&&players[d.token]){
+    // إطفاء شاشة الجوال قد يوقف WebSocket مؤقتًا؛ اللاعب يبقى في الغرفة وفي ترتيب الأدوار.
+    players[d.token].lastSeen=Date.now();
+    return
+  }
+  if(d.type==='primaryGuess'&&d.token===activeToken()&&phase==='guessing'){
+    primaryGuess=Math.max(0,Math.min(100,Math.round(Number(d.value))));
+    phase='voting';votes={};renderHost();broadcastState();return
+  }
+  if(d.type==='vote'&&phase==='voting'&&d.token!==activeToken()&&expectedVoters().includes(d.token)){
+    const allowed=allowExtreme()?['higher','lower','muchHigher','muchLower']:['higher','lower'];
+    if(allowed.includes(d.choice)){votes[d.token]=d.choice;renderHost();broadcastState()}
+  }
+}
+function safePlayers(){return Object.fromEntries(Object.entries(players).map(([t,p])=>[t,{name:p.name,score:p.score,online:true,lastGain:p.lastGain||0}]))}
+function state(){
+  return{
+    type:'state',phase,round,totalRounds,turnIndex,turnOrder,
+    currentQuestion:currentQuestion?{
+      ID:currentQuestion.ID,q:currentQuestion['السؤال_لعبة'],
+      truth:revealed?currentQuestion['النسبة_الصحيحة']:null,
+      audience:currentQuestion['الجمهور_المقصود'],year:currentQuestion['السنة'],
+      source:currentQuestion['المصدر'],sourceTitle:currentQuestion['عنوان_المصدر'],
+      sourceUrl:revealed?currentQuestion['رابط_المصدر']:null
+    }:null,
+    primaryGuess,activeToken:activeToken(),activeName:activePlayer()?.name||'',
+    votes:revealed?votes:Object.fromEntries(Object.keys(votes).map(t=>[t,true])),
+    voteCount:Object.keys(votes).length,expectedVoteCount:expectedVoters().length,
+    allowExtreme:allowExtreme(),revealed,players:safePlayers()
+  }
+}
+function broadcastState(){publishEvent({to:'all',...state()})}
+
+
+function speakSaudi(text){
+  if(!text || !('speechSynthesis' in window)) return;
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='ar-SA';u.rate=.93;u.pitch=1; speechSynthesis.speak(u)}catch(e){}
+}
+function narrateQuestion(){if(currentQuestion)speakSaudi(currentQuestion['المقدمة_الصوتية']+' '+currentQuestion['السؤال_لعبة'])}
+
+function beginGame(){
+  const toks=onlineTokens();if(toks.length<2)return;
+  Object.values(players).forEach(p=>{p.score=0;p.lastGain=0});
+  turnOrder=[...toks].sort(()=>Math.random()-.5);
+  totalRounds=toks.length<=6?2:1;round=1;turnIndex=0;phase='guessing';
+  currentQuestion=pickQuestion();primaryGuess=null;votes={};revealed=false;
+  hide('hostLobby');show('hostGame');hide('hostGameOver');
+  $('roundLabel').textContent=round+'/'+totalRounds;renderHost();broadcastState();setTimeout(narrateQuestion,500)
+}
+function revealResult(){
+  if(phase!=='voting'||revealed||primaryGuess===null)return;
+  const truth=currentQuestion['النسبة_الصحيحة'],diff=Math.abs(primaryGuess-truth);
+  Object.values(players).forEach(p=>p.lastGain=0);
+  let gp=0;
+  if(diff===0)gp=3000;
+  else if(diff<=10)gp=3000-diff*100;
+  else if(diff<=30)gp=2000-(diff-10)*50;
+  const at=activeToken();
+  if(players[at]){players[at].score+=gp;players[at].lastGain=gp}
+  if(diff!==0){
+    for(const [tok,ch] of Object.entries(votes)){
+      let pts=0;
+      if(ch==='higher'&&truth>primaryGuess)pts=1000;
+      else if(ch==='lower'&&truth<primaryGuess)pts=1000;
+      else if(ch==='muchHigher'&&(truth-primaryGuess)>15)pts=2000;
+      else if(ch==='muchLower'&&(primaryGuess-truth)>15)pts=2000;
+      if(players[tok]){players[tok].score+=pts;players[tok].lastGain=pts}
+    }
+  }
+  revealed=true;phase='result';renderHost();broadcastState();setTimeout(()=>speakSaudi(currentQuestion['نص_الكشف_الصوتي']),300)
+}
+function nextTurn(){
+  if(phase!=='result')return;
+  turnIndex++;
+  if(turnIndex>=turnOrder.length){
+    if(round<totalRounds){round++;turnIndex=0}else{return endGame()}
+  }
+  phase='guessing';currentQuestion=pickQuestion();primaryGuess=null;votes={};revealed=false;
+  Object.values(players).forEach(p=>p.lastGain=0);
+  $('roundLabel').textContent=round+'/'+totalRounds;renderHost();broadcastState();setTimeout(narrateQuestion,500)
+}
+function skipTurn(){
+  if(!['guessing','voting'].includes(phase))return;
+  if(!confirm('تخطي هذا الدور؟'))return;
+  phase='result';revealed=true;Object.values(players).forEach(p=>p.lastGain=0);
+  renderHost();broadcastState()
+}
+function endGame(){
+  phase='gameover';hide('hostGame');show('hostGameOver');
+  const arr=Object.values(players).sort((a,b)=>b.score-a.score),best=arr[0]?.score||0;
+  const winners=arr.filter(p=>p.score===best).map(p=>p.name);
+  $('winnerBanner').textContent=winners.length?`🏆 ${winners.join(' و ')} — ${best.toLocaleString('en-US')} نقطة`:'انتهت اللعبة';
+  renderHost();broadcastState()
+}
+function newGameSamePlayers(){
+  phase='lobby';round=0;totalRounds=0;turnOrder=[];turnIndex=-1;currentQuestion=null;primaryGuess=null;votes={};revealed=false;
+  Object.values(players).forEach(p=>{p.score=0;p.lastGain=0});
+  show('hostLobby');hide('hostGame');hide('hostGameOver');$('roundLabel').textContent='—';
+  renderHost();broadcastState()
+}
+function renderHost(){
+  const arr=Object.entries(players);
+  $('playerCount').textContent=`(${arr.length})`;
+  $('playersList').innerHTML='';
+  arr.forEach(([t,p])=>{
+    const d=document.createElement('div');d.className='playerRow'+(t===activeToken()?' activeOutline':'');
+    d.innerHTML=`<div class="person">${avatarHTML(p)}<span class="personName">${esc(p.name)}</span></div><span>✅</span>`;
+    $('playersList').appendChild(d)
+  });
+  $('scoreboard').innerHTML='';
+  [...arr].sort((a,b)=>b[1].score-a[1].score).forEach(([t,p],i)=>{
+    const d=document.createElement('div');d.className='scoreRow';
+    d.innerHTML=`<div class="person"><span class="rank">${i+1}</span>${avatarHTML(p,'avatar sm')}<strong class="personName">${esc(p.name)}</strong></div><div style="text-align:left"><strong>${(p.score||0).toLocaleString('en-US')}</strong>${p.lastGain?`<div class="roundGain">+${p.lastGain}</div>`:''}</div>`;
+    $('scoreboard').appendChild(d)
+  });
+  $('startGameBtn').disabled=onlineTokens().length<2;
+  if(phase==='lobby'||phase==='gameover')return;
+  if(!currentQuestion)return;
+  const ap=activePlayer();
+  $('turnPlayer').textContent=ap?.name||'—';
+  if(avatarSrc(ap?.avatar)){$('turnAvatar').src=ap.avatar;show('turnAvatar')}else hide('turnAvatar');
+  $('hostQuestion').textContent=currentQuestion['السؤال_لعبة'];
+  $('phaseText').textContent=phase==='guessing'?'التخمين':phase==='voting'?'أعلى أم أقل؟':'النتيجة';
+  if(primaryGuess===null)hide('hostGuessArea');else{show('hostGuessArea');$('hostGuess').textContent=primaryGuess+'%'}
+  if(phase==='guessing'){
+    $('voteProgress').textContent=`بانتظار ${ap?.name||'اللاعب'} يثبت تخمينه من الجوال.`;
+    hide('revealBtn');hide('nextTurnBtn');hide('hostResult')
+  }
+  if(phase==='voting'){
+    const done=Object.keys(votes).length,need=expectedVoters().length;
+    $('voteProgress').textContent=`تم التصويت: ${done} من ${need}`;
+    show('revealBtn');$('revealBtn').disabled=done===0;hide('nextTurnBtn');hide('hostResult')
+  }
+  if(phase==='result'){
+    show('hostResult');hide('revealBtn');show('nextTurnBtn');
+    $('resultGuess').textContent=(primaryGuess??'—')+(primaryGuess===null?'':'%');
+    const truth=currentQuestion['النسبة_الصحيحة'];$('resultTruth').textContent=truth+'%';
+    const diff=primaryGuess===null?null:Math.abs(primaryGuess-truth);
+    $('resultDistance').textContent=primaryGuess===null?'تم تخطي الدور':diff===0?'🎯 إصابة تامة!':`الفرق ${diff} نقطة مئوية`;
+    $('voteProgress').textContent='تم احتساب النقاط.';
+    renderVoteSummary();
+    $('sourceBox').innerHTML=`${esc(currentQuestion['المصدر'])} • ${esc(currentQuestion['السنة'])} • ${esc(currentQuestion['الجمهور_المقصود'])}<br><a href="${esc(currentQuestion['رابط_المصدر'])}" target="_blank" rel="noopener">المصدر</a>`
+  }
+}
+function renderVoteSummary(){
+  const names={higher:'أعلى',lower:'أقل',muchHigher:'أعلى بكثير',muchLower:'أقل بكثير'};
+  const c={higher:0,lower:0,muchHigher:0,muchLower:0};Object.values(votes).forEach(v=>c[v]++);
+  $('voteSummary').innerHTML=Object.entries(c).filter(([k,v])=>v||(!allowExtreme()&&['higher','lower'].includes(k))).map(([k,v])=>`<span class="voteChip">${names[k]}: <b>${v}</b></span>`).join('')
+}
+
+/* ---------- Player photo ---------- */
+async function handleAvatarInput(input){
+  const file=input.files?.[0];if(!file)return;
+  $('photoHint').textContent='جاري تجهيز الصورة…';
+  try{
+    const data=await compressAvatar(file);
+    myAvatar=data;localStorage.setItem('percentGameAvatar',data);
+    $('avatarPreview').src=data;show('avatarPreview');hide('avatarPlaceholder');
+    $('photoHint').textContent='الصورة جاهزة ✅ يمكنك إعادة التصوير إذا رغبت.';
+  }catch{
+    myAvatar='';localStorage.removeItem('percentGameAvatar');
+    $('photoHint').textContent='تعذر قراءة الصورة. جرّب صورة أخرى.'
+  }
+}
+function compressAvatar(file){
+  return new Promise((resolve,reject)=>{
+    const img=new Image(),url=URL.createObjectURL(file);
+    img.onload=()=>{
+      try{
+        const size=160,canvas=document.createElement('canvas');canvas.width=size;canvas.height=size;
+        const ctx=canvas.getContext('2d');
+        const scale=Math.max(size/img.width,size/img.height);
+        const w=img.width*scale,h=img.height*scale,x=(size-w)/2,y=(size-h)/2;
+        ctx.drawImage(img,x,y,w,h);
+        const data=canvas.toDataURL('image/jpeg',0.66);
+        URL.revokeObjectURL(url);resolve(data)
+      }catch(e){URL.revokeObjectURL(url);reject(e)}
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('image'))};
+    img.src=url
+  })
+}
+
+/* ---------- Player ---------- */
+function joinManual(){
+  const c=cleanRoomCode($('manualRoom').value);
+  if(c.length!==10){$('manualRoom').value=c;return}
+  location.href=(location.protocol==='file:'?location.href.split('?')[0]:location.origin+location.pathname)+'?room='+encodeURIComponent(c)
+}
+async function setupPlayer(room){
+  mode='player';roomCode=cleanRoomCode(room);hide('landing');show('playerView');
+  if(roomCode.length!==10){setPlayerConnectionStatus('رمز الغرفة غير صحيح. امسح QR من شاشة المضيف.');return}
+  await setupRoom(roomCode);
+  if(myAvatar){$('avatarPreview').src=myAvatar;show('avatarPreview');hide('avatarPlaceholder')}
+  await connectMqtt('player');
+}
+async function sendJoin(){
+  if(!joinedName||!myAvatar)return;
+  await publishEvent({to:'host',from:myToken,type:'join',token:myToken,name:joinedName,avatar:myAvatar})
+}
+async function joinGame(){
+  const name=$('playerName').value.trim();
+  if(!connected){setPlayerConnectionStatus('لسه ما اتصلنا بالغرفة. انتظر لحظة وسيعاد الاتصال تلقائيًا.');return}
+  if(!name){setPlayerConnectionStatus('اكتب اسمك أولًا.');return}
+  if(!myAvatar){setPlayerConnectionStatus('خذ صورة قبل الدخول 📸');return}
+  if(joining)return;
+  joining=true;joinedName=name;hasJoined=true;
+  localStorage.setItem('percentGameName',name);
+  $('joinBtn').classList.add('joinButtonBusy');$('joinBtn').textContent='جاري الدخول…';
+  setPlayerConnectionStatus('تم الاتصال — جاري تسجيلك في الغرفة…',true);
+  await sendJoin();
+  setTimeout(()=>{
+    if(joining){
+      joining=false;$('joinBtn').classList.remove('joinButtonBusy');$('joinBtn').textContent='إعادة محاولة الدخول';
+      setPlayerConnectionStatus('لم يصل تأكيد الدخول بعد. اضغط إعادة المحاولة — الاتصال سيبقى شغالًا.')
+    }
+  },6000)
+}
+async function sendHeartbeat(){if(hasJoined&&joinedName)publishEvent({to:'host',from:myToken,type:'heartbeat',token:myToken})}
+function submitPrimaryGuess(){
+  if(!connected){$('waitBox').textContent='الاتصال انقطع لحظيًا — جاري إعادته…';show('waitBox');return}
+  publishEvent({to:'host',from:myToken,type:'primaryGuess',token:myToken,value:Number($('guessRange').value)});
+  hide('guesserControls');$('waitBox').textContent='تم تثبيت تخمينك. الآن البقية يصوّتون…';show('waitBox')
+}
+function vote(choice){
+  if(!connected){$('waitBox').textContent='الاتصال انقطع لحظيًا — جاري إعادته…';show('waitBox');return}
+  publishEvent({to:'host',from:myToken,type:'vote',token:myToken,choice});
+  hide('voterControls');$('waitBox').textContent='تم تسجيل تصويتك ✅ انتظر كشف النتيجة.';show('waitBox')
+}
+function handlePlayerData(d){
+  if(d.type==='rejected'){
+    joining=false;hasJoined=false;
+    $('joinBtn').classList.remove('joinButtonBusy');$('joinBtn').textContent='دخول';
+    setPlayerConnectionStatus(d.reason);show('joinStep');hide('playerGame');return
+  }
+  if(d.type==='joined'){
+    joining=false;hasJoined=true;
+    $('joinBtn').classList.remove('joinButtonBusy');$('joinBtn').textContent='دخول';
+    hide('joinStep');show('playerGame');
+    if(myAvatar){$('pMyAvatar').src=myAvatar;show('pMyAvatar')}
+    if(heartbeatTimer)clearInterval(heartbeatTimer);
+    heartbeatTimer=setInterval(sendHeartbeat,8000);
+    sendHeartbeat();
+    return
+  }
+  if(d.type==='state'){
+    const me=d.players?.[myToken];
+    if(me&&!hasJoined){
+      hasJoined=true;joining=false;joinedName=me.name||joinedName;
+      hide('joinStep');show('playerGame');
+      if(myAvatar){$('pMyAvatar').src=myAvatar;show('pMyAvatar')}
+      if(heartbeatTimer)clearInterval(heartbeatTimer);
+      heartbeatTimer=setInterval(sendHeartbeat,8000)
+    }
+    renderPlayer(d)
+  }
+}
+function renderPlayer(s){
+  const me=s.players?.[myToken];
+  if(me)$('pScore').textContent=(me.score||0).toLocaleString('en-US');
+  $('pRound').textContent=s.totalRounds?`${s.round}/${s.totalRounds}`:'—';
+  hide('guesserControls');hide('voterControls');hide('playerResult');show('waitBox');
+  if(s.phase==='lobby'){$('playerQuestion').textContent='أنت داخل ✅ انتظر المضيف يبدأ اللعبة.';$('waitBox').textContent='جاهز للعب.';return}
+  if(s.phase==='gameover'){
+    const arr=Object.values(s.players).sort((a,b)=>b.score-a.score),best=arr[0]?.score||0;
+    const winners=arr.filter(p=>p.score===best).map(p=>p.name);
+    $('playerQuestion').textContent='انتهت اللعبة 🏆';$('waitBox').textContent=`الفائز: ${winners.join(' و ')} — ${best.toLocaleString('en-US')} نقطة`;return
+  }
+  if(!s.currentQuestion)return;
+  $('playerQuestion').textContent=s.currentQuestion.q;
+  const amActive=s.activeToken===myToken;
+  if(s.phase==='guessing'){
+    if(amActive){hide('waitBox');show('guesserControls')}
+    else $('waitBox').textContent=`الدور الآن على ${s.activeName} ليخمّن النسبة.`;
+    return
+  }
+  if(s.phase==='voting'){
+    if(amActive){$('waitBox').textContent='تم تخمينك. البقية يقررون أعلى أو أقل…';return}
+    const already=!!s.votes?.[myToken];
+    if(already){$('waitBox').textContent='تم تسجيل تصويتك ✅';return}
+    hide('waitBox');$('pGuesserName').textContent=s.activeName;$('pGuess').textContent=s.primaryGuess+'%';
+    renderChoices(s.allowExtreme);show('voterControls');return
+  }
+  if(s.phase==='result'){
+    hide('waitBox');show('playerResult');
+    $('pResultGuess').textContent=(s.primaryGuess??'—')+(s.primaryGuess===null?'':'%');
+    $('pResultTruth').textContent=s.currentQuestion.truth+'%';
+    const gain=me?.lastGain||0;$('pRoundGain').textContent=gain?`+${gain.toLocaleString('en-US')} نقطة`:'0 نقطة';
+    if(amActive){
+      const diff=s.primaryGuess===null?null:Math.abs(s.primaryGuess-s.currentQuestion.truth);
+      $('pResultText').textContent=s.primaryGuess===null?'تم تخطي الدور.':diff===0?'إصابة تامة — 3000 نقطة!':`كنت بعيدًا ${diff} نقطة مئوية.`
+    }else $('pResultText').textContent=gain?'تصويتك كان صحيحًا ✅':'تصويتك لم يصب هذه المرة.'
+  }
+}
+function renderChoices(extreme){
+  const arr=extreme?
+    [['muchHigher','أعلى بكثير ⬆⬆','higher much'],['higher','أعلى ⬆','higher'],['lower','أقل ⬇','lower'],['muchLower','أقل بكثير ⬇⬇','lower much']]:
+    [['higher','أعلى ⬆','higher'],['lower','أقل ⬇','lower']];
+  $('voteChoices').className='choiceGrid'+(extreme?' four':'');
+  $('voteChoices').innerHTML=arr.map(([v,l,c])=>`<button class="choice ${c}" onclick="vote('${v}')">${l}</button>`).join('')
+}
+
+const params=new URLSearchParams(location.search);const room=params.get('room');if(room){const saved=localStorage.getItem('percentGameName');if(saved)$('playerName').value=saved;setupPlayer(room)}
+</script>
+</body>
+</html>
